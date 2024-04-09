@@ -1,0 +1,34 @@
+---
+title: Advanced Browser Manipulation with Playwright
+date: 2024/04/11
+description: A comprehensive guide about managing cookies, local storage, and sessions.
+tag: tutorial
+author: Hrutik
+---
+
+import { BlogHeader } from "@/components/blog/blog-header";
+import { Tabs } from "nextra/components";
+
+<BlogHeader
+  title="Advanced Browser Manipulation with Playwright"
+  description="A comprehensive guide about managing cookies, local storage, and sessions."
+  date="April 11, 2024"
+  authors={["hrutik"]}
+/>
+
+In the rising age of the web developement , the need of effective browser manipulation is must for developing a good quality web application. Playwright is a automation library that offers capabillities for controlling web browsers programmatically . In this guide , we will dive into the intricacies of managing cookies , local storage , and sessions using Playwright , empowering develoeprs to harness it's full potential for browser automation. 
+
+## Managing cookies programmatically
+
+Cookies play a crucial role in maintaining session state and tracking user interactions on the web. With playwright developer can manipulate cookies programmatically , offering flexibility and control over the browser sessions . Playwright provide API handelling cookies , allowing developers to set , get , and delete cookies as needed . 
+
+**Setting a cookie**
+
+To set a cookie using Playwright ,developers can utilize the **_setCookie_**  method , specifying the name , value , domain and other attributes of the cookie . This method allow developers to simulate various user scenarios , such as authentication and session management 
+
+Let's break down the process step by step :
+
+**1 . Accesing the page context** : Before setting a cookie , develoeprs typically need to access the desired page within the browser which is controlled by Playwright .
+
+**2 . utilizing the setCookie method** : Once on the desired page , developers can use the **_setCookie_** method to define and set the attributes of the cookie . This method takes in parameters such as the cookie name , value , and other attributes like domain , path , and expiration date .
+
