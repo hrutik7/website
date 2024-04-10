@@ -16,19 +16,298 @@ import { Tabs } from "nextra/components";
   authors={["hrutik"]}
 />
 
-In the rising age of the web developement , the need of effective browser manipulation is must for developing a good quality web application. Playwright is a automation library that offers capabillities for controlling web browsers programmatically . In this guide , we will dive into the intricacies of managing cookies , local storage , and sessions using Playwright , empowering develoeprs to harness it's full potential for browser automation. 
+In the rising age of the web developement , the need of effective browser manipulation is must for developing a good quality web application. Playwright is a automation library that offers capabillities for controlling web browsers programmatically . In this guide , we will dive into the intricacies of managing cookies , local storage , and sessions using Playwright , empowering develoeprs to harness it's full potential for browser automation.
 
 ## Managing cookies programmatically
 
-Cookies play a crucial role in maintaining session state and tracking user interactions on the web. With playwright developer can manipulate cookies programmatically , offering flexibility and control over the browser sessions . Playwright provide API handelling cookies , allowing developers to set , get , and delete cookies as needed . 
+Cookies play a crucial role in maintaining session state and tracking user interactions on the web. With playwright developer can manipulate cookies programmatically , offering flexibility and control over the browser sessions . Playwright provide API handelling cookies , allowing developers to set , get , and delete cookies as needed .
 
 **Setting a cookie**
 
-To set a cookie using Playwright ,developers can utilize the **_setCookie_**  method , specifying the name , value , domain and other attributes of the cookie . This method allow developers to simulate various user scenarios , such as authentication and session management 
+To set a cookie using Playwright ,developers can utilize the **_setCookie_** method , specifying the name , value , domain and other attributes of the cookie . This method allow developers to simulate various user scenarios , such as authentication and session management
 
 Let's break down the process step by step :
 
 **1 . Accesing the page context** : Before setting a cookie , develoeprs typically need to access the desired page within the browser which is controlled by Playwright .
 
 **2 . utilizing the setCookie method** : Once on the desired page , developers can use the **_setCookie_** method to define and set the attributes of the cookie . This method takes in parameters such as the cookie name , value , and other attributes like domain , path , and expiration date .
+
+```javascript
+await page.setCookie({
+  name: "<name>",
+  value: "<value>",
+  domain: "<domain>",
+});
+```
+* 'name' : Specifies the name of the cookie
+* 'value' : Specifies the value of the cookie
+* 'domain' : Specifies the domain of the cookie
+
+Here some approaches to manage cookies programmatically using Playwright :
+
+* `cookies()` : Get all the cookies for the current page session
+* `setCookie()` : Set a cookie by defining its attributes
+* `deleteCookie()` : Delete a specific cookie
+* `clearCookies()` : Clear all cookies for the current page session
+* `storageState()` : Persist cookies accross sessions
+
+**How cookies are stored in browser ?**
+
+By using the google developer tools , you can inspect the cookies stored in the browser . To access the cookies , open the developer tools by pressing `F12` and navigate to the `Application` tab . Here you can view the cookies stored in the browser , along with their attributes such as name , value , domain , and expiration date .
+
+<Frame >![intro meme](/images/blog/advanceBrowser_manipulation/browser_cookies.png)</Frame>
+
+**Get the Cookie in Playwright**
+
+For getting the cookies in playright , use the `cookies.context()` method which will return an array of cookie object for the current context 
+
+for example :
+
+```javascript
+await page.goto('https://wikipedia.org/');
+const cookies = await page.context().cookies();
+console.log(cookies); // console all the cookies
+```
+
+Playwright manages cookies through the _browser context_ . The browser context is a container for a set of pages that share the same cookies and storage . By default , Playwright creates a new browser context for each browser instance , allowing developers to manage cookies and storage independently for each context .
+
+**Get and filter cookies**
+
+After fetching the cookies , you can filter them based on your needs 
+for example :
+
+```javascript
+const cookies = await context.cookies();
+const sessionCookie = cookies.find((c) => c.name === "session_id");
+console.log(sessionCookie);
+```
+
+**Get a specific cookie from URL**
+
+To get a specific cookie from a URL , you can use the `cookies()` method to fetch all the cookies for the current page session , and then filter the cookies based on the URL .
+
+```javascript
+const googleCookies = await context.cookies(["https://wikipedia.org/"]);
+```
+
+**An Examlple of getting cookie**
+
+Let's see the example of [wikipedia](https://wikipedia.org/)
+
+At first it will navigate to the wikipedia website , get all cookies from the context , search for the `locale` cookie and finally it will return a specific cookie from the website .
+
+```javascript
+const { chromium } = require("playwright");
+ 
+(async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+ 
+  await page.goto("https://www.wikipedia.org/");
+ 
+  // Get all cookies
+  const cookies = await context.cookies();
+  console.log(cookies);
+ 
+  const sessionCookie = cookies.find((c) => c.name === "locale");
+  console.log(sessionCookie);
+ 
+  const goodreadCookies = await context.cookies(["https://www.wikipedia.org/"]);
+  console.log(goodreadCookies);
+ 
+  await browser.close();
+})();
+``` 
+
+The output of the above code will be :
+
+```
+[
+{
+name: 'WMF-Last-Access',
+value: '10-Apr-2024',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1715532978.185065,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'WMF-Last-Access-Global',
+value: '10-Apr-2024',
+domain: '.wikipedia.org',
+path: '/',
+expires: 1715532978.185233,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'GeoIP',
+value: 'US:VA:Washington:38.71:-78.15:v4',
+domain: '.wikipedia.org',
+path: '/',
+expires: -1,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'NetworkProbeLimit',
+value: '0.001',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1712747831.243039,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+}
+]
+undefined
+[
+{
+name: 'WMF-Last-Access',
+value: '10-Apr-2024',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1715532978.185065,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'WMF-Last-Access-Global',
+value: '10-Apr-2024',
+domain: '.wikipedia.org',
+path: '/',
+expires: 1715532978.185233,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'GeoIP',
+value: 'US:VA:Washington:38.71:-78.15:v4',
+domain: '.wikipedia.org',
+path: '/',
+expires: -1,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'NetworkProbeLimit',
+value: '0.001',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1712747831.243039,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+}
+]
+```
+
+**Working with session cookies**
+
+session cookies in playwright are temporary cookies that are deleted once the browser session ends . These cookies are useful for maintaining session state and user authentication during a browsing session . To work with session cookies , developers can set the `expires` attribute of the cookie to `-1` , indicating that the cookie should be deleted once the session ends .
+
+In playwright , you can create a session cookie by simply not specifying the expires or maxAge properties when you use the `context.addCookies()` method .
+
+Here is an example of creating a session cookie :
+
+```javascript
+const { chromium } = require("playwright");
+
+(async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Add a session cookie
+  await context.addCookies([
+    {
+      name: "session_cookie",
+      value: "123456",
+      domain: "example.com",
+      path: "/",
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    },
+  ]);
+
+  // Verify the cookie is set
+  const cookies = await context.cookies();
+  console.log(cookies);
+
+  await browser.close();
+})();
+```
+
+**Some best practices for managing cookies**
+
+When working with cookies in playwright obeying to best practices can make sure efficient , secure , and reliable handling of user data . Here are some best practices for managing cookies in playwright :
+
+* updating cookies : When acquiring cookies , it's crucial to take into account their expiration date (`expires` key) .
+
+* Handle errors : Implement error handling when setting or deleting cookies to prevent unexpected behavior .
+
+* Test in Headless mode : Implement error handelling to manage potential issues when interacting with cookies . This prevents the script failure
+
+
+**Cookie handelling in production**
+
+for real world example of cookie handelling in production . we will sigin in a website then transfer the auth cookie to anouther browser so we can access the protected content without signing in again .
+
+```javascript
+const { chromium } = require("playwright");
+
+(async () => {
+  // Open a new browser
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Navigate to the login page and log in
+  await page.goto("https://the-internet.herokuapp.com/login");
+  await page.fill("#username", "tomsmith");
+  await page.fill("#password", "SuperSecretPassword!");
+  await page.click(".fa-sign-in");
+
+  // Wait for navigation to ensure login is complete
+  await page.waitForURL("**/secure**");
+
+  // Get the authentication cookie
+  const cookies = await context.cookies();
+  const authCookie = cookies.find((cookie) => cookie.name === "rack.session");
+
+  // Close the current browser
+  await browser.close();
+
+  // Open a new browser
+  const newBrowser = await chromium.launch();
+  const newContext = await newBrowser.newContext();
+  const newPage = await newContext.newPage();
+
+  // Add the authentication cookie
+  await newContext.addCookies([authCookie]);
+
+  // Navigate to the protected content
+  await newPage.goto("https://the-internet.herokuapp.com/secure"); // replace with your protected content URL
+  console.log(await newPage.innerText("h4"));
+
+  // Close the new browser
+  await newBrowser.close();
+})();
+```
+
+
+
+
+
+
+
 
