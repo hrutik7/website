@@ -93,9 +93,9 @@ To get a specific cookie from a URL, you can use the `cookies()` method to fetch
 const googleCookies = await context.cookies(["https://wikipedia.org/"]);
 ```
 
-**An Examlple of getting cookie**
+**An Example of getting cookie**
 
-Let's see the example of [wikipedia](https://wikipedia.org/)
+Let's see the example of [Wikipedia](https://wikipedia.org/)
 
 At first it will navigate to the wikipedia website, get all cookies from the context, search for the `locale` cookie and finally it will return a specific cookie from the website.
 
@@ -249,7 +249,7 @@ const { chromium } = require("playwright");
 
 **Some best practices for cookie management**
 
-When working with cookies in playwright obeying to best practices can make sure efficient, secure, and reliable handling of user data. Here are some best practices for managing cookies in playwright :
+When working with cookies in playwright obeying to best practices can make sure efficient, secure, and reliable handling of user data. Here are some best practices for managing cookies in Playwright :
 
 - updating cookies : Update cookies according to expiration dates for efficient management.(`expires` key).
 
@@ -257,7 +257,7 @@ When working with cookies in playwright obeying to best practices can make sure 
 
 - Test in Headless mode : Test in Headless mode to manage potential issues when interacting with cookies and prevent script failures.
 
-**Cookie handelling in production**
+**Cookie handling in production**
 
 Demonstrate cookie handling in a real-world scenario by signing in to a website and transferring the auth cookie to another browser to access protected content without signing in again.
 
