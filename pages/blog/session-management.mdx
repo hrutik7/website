@@ -18,4 +18,34 @@ import { Tabs } from "nextra/components";
 
 In today's era of web applications, robust login, logout, and session management are essential for both security and user experience . Playwright, with it's powerful automation capabilities, provides a solid foundation for testing and implementing these important functionalities. In this blog we will explore some practical strategies and real world examples for handling login , logout and session management with playwright.
 
+**Automating Login with Playwright**
+
+Login functionality is the gateway to the application for accesing the restricted area of the application. Automating login with Playwright involves simulating the user interactions like entering the credentials and submiting the login form . Let's see an examples
+
+```javascript
+import { chromium } from 'playwright';
+
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.goto('https://example.com/login');
+
+  // Enter username and password
+  await page.fill('#username', 'your_username');
+  await page.fill('#password', 'your_password');
+
+  // Click on the login button
+  await page.click('button[type="submit"]');
+
+  // Wait for navigation to complete
+  await page.waitForNavigation();
+
+  // Verify login success
+  // Insert verification logic here
+
+  await browser.close();
+})();
+```
+
+
 
