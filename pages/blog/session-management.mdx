@@ -23,36 +23,439 @@ In today's era of web applications, robust login, logout, and session management
 Login functionality is the gateway to the application for accesing the restricted area of the application. Automating login with Playwright involves simulating the user interactions like entering the credentials and submiting the login form . Let's see an examples
 
 ```javascript
-import { chromium } from 'playwright';
+import { test as setup, expect } from "@playwright/test";
 
-(async () => {
+const authFile = "playwright/.auth/user.json";
+
+setup("authenticate", async ({ page }) => {
+  // Perform authentication steps. Replace these actions with your own.
+  await page.goto("https://github.com/login");
+  await page.getByLabel("Username or email address").fill("username");
+  await page.getByLabel("Password").fill("password");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  // Wait until the page receives the cookies.
+  //
+  // Sometimes login flow sets cookies in the process of several redirects.
+  // Wait for the final URL to ensure that the cookies are actually set.
+  await page.waitForURL("https://github.com/");
+  // Alternatively, you can wait until the page reaches a state where all cookies are set.
+  await expect(
+    page.getByRole("button", { name: "View profile and more" }),
+  ).toBeVisible();
+
+  // End of authentication steps.
+
+  await page.context().storageState({ path: authFile });
+});
+```
+
+now let's see **How to Handle auth in E2E testing with Playwright**
+
+To make it work, we should use [_globalsetup_](https://playwright.dev/docs/test-global-setup-teardown) . it's just a function an a property in the playwright configuration file. Here is sample configuration file
+
+```javascript
+import { devices } from "@playwright/test";
+
+const config = {
+  globalSetup: "./e2e/globalSetup",
+  use: {
+    baseURL: process.env.BASE_URL,
+    storageState: `./e2e/state.json`,
+  },
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+  testDir: "./src",
+  testMatch: "**/*.spec.js",
+};
+
+export default config;
+```
+
+after that next step is we have to implement the _globalSetup_ function
+
+```javascript
+import { chromium } from "@playwright/test";
+import { AuthPage } from "./AuthPage";
+
+async function globalSetup(config) {
+  const [project] = config.projects;
+  const { storageState, baseURL } = project.use;
+
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('https://example.com/login');
 
-  // Enter username and password
-  await page.fill('#username', 'your_username');
-  await page.fill('#password', 'your_password');
+  const auth = new AuthPage(page, baseURL);
+  await auth.login();
 
-  // Click on the login button
-  await page.click('button[type="submit"]');
-
-  // Wait for navigation to complete
-  await page.waitForNavigation();
-
-  // Verify login success
-  // Insert verification logic here
+  await page.context().storageState({
+    path: storageState,
+  });
 
   await browser.close();
-})();
+}
+
+export default globalSetup;
+```
+
+In general, we've passed the configuration , successfully launched the browser and new page is created _page.context()_ that stores the browser context (cookies,local storage and so on) to the path we've provided in the configuration
+
+And then, let's check the authentication
+
+```javascript
+const userCredentials = {
+  username: process.env.USERNAME ?? "",
+  password: process.env.PASSWORD ?? "",
+};
+
+export class AuthPage {
+  constructor(page, baseUrl = "") {
+    this.page = page;
+    this.baseUrl = baseUrl;
+  }
+
+  async submitLoginForm() {
+    await this.page.click('input[type="email"]');
+    await this.page.fill('input[type="email"]', userCredentials.username);
+    await this.page.click('input[type="password"]');
+    await this.page.fill('input[type="password"]', userCredentials.password);
+    await this.page.click('text="Sign In"');
+  }
+
+  async login() {
+    await Promise.all([
+      this.page.goto(this.baseUrl + "/login"),
+      this.page.waitForNavigation(),
+    ]);
+
+    await this.submitLoginForm();
+
+    // if there's a redirect back to main page
+    await this.page.waitForURL((url) => url.origin === this.baseUrl, {
+      waitUntil: "networkidle",
+    });
+  }
+}
+```
+
+Basic functionality is done here . Finished with logic implementation , connected to the test runners and it runs intially of the app flow
+
+Depending on the logic of the backend , the state of the auth might be reused several times . for example in this case, the token was valid for a couple of hours, so it's make no sense to run e2e auth logic again and again.
+
+Let's make some improvements to the _globalSetup_ function
+
+Let's change the playwright configuration file and implement the function that will generate the state file name concatenated with a timestamp. Otherwise, if an hour does not pass , it will return the old one:
+
+```javascript
+import { devices } from "@playwright/test";
+
+const STORAGE_STATE_FILE_PREFIX = "state";
+const STORAGE_STATE_PATH = "./e2e";
+const EXPIRES_IN_MINUTES = 60;
+
+const getStorageStateFileName = () => {
+  const lastFile = fs
+    .readdirSync(STORAGE_STATE_PATH)
+    .filter((name) => name.startsWith(STORAGE_STATE_FILE_PREFIX))
+    .pop();
+  const currentTime = Date.now();
+
+  if (lastFile) {
+    const [, lastTimestamp] = lastFile.split(".");
+    const dateDiffInMinutes = Math.floor(
+      (currentTime - parseInt(lastTimestamp)) / 1000 / 60,
+    );
+
+    return dateDiffInMinutes > EXPIRES_IN_MINUTES ? currentTime : lastTimestamp;
+  }
+
+  return currentTime;
+};
+
+const config = {
+  globalSetup: "./e2e/globalSetup",
+  use: {
+    baseURL: process.env.BASE_URL,
+    // generates new filename concatenated with timestamp or returns old one (for example, state.1645720991712.json)
+    storageState: `${STORAGE_STATE_PATH}/state.${getStorageStateFileName()}.json`,
+  },
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+  testDir: "./src",
+  testMatch: "**/*.spec.js",
+};
+
+export default config;
 ```
 
 **Handeling Logout with Playwright**
 
-**session management with Playwright**
+For logging out let's see this [example](https://the-internet.herokuapp.com/login)
+
+here we are following the steps for automating this test
+
+1. visit [link](https://the-internet.herokuapp.com/login)
+
+2. Once the page is loaded completely, log in with username as `tomsmith` and password as `SuperSecretPassword!`
+
+3. Assert that the login was successful
+
+4. Log out and assert that the logout was successful
+
+```javascript
+import { test, expect } from "@playwright/test";
+
+test("Example to demonstrate text input and basic assertions", async ({
+  page,
+}) => {
+  await page.goto("https://the-internet.herokuapp.com/login");
+
+  await expect(page.locator("#username")).toBeVisible({ timeout: 2000 });
+
+  await page.fill("#username", "tomsmith");
+
+  await page.fill("#password", "SuperSecretPassword!");
+
+  await page.click('button[type="submit"]');
+
+  await expect(page.locator("div#flash")).toContainText(
+    "You logged into a secure area!",
+  );
+
+  await page.click('a[href="/logout"]');
+
+  await expect(page.locator("#username")).toBeVisible({ timeout: 2000 });
+
+  await expect(page.locator("div#flash")).toContainText(
+    "You logged out of the secure area!",
+  );
+});
+```
 
 **Advanced Strategies for Handling Login with Playwright**
 
-<!-- captcha challenge -->
-<!-- clerk.dev -->
-<!-- magic link -->
+Beyond the basic login and logout functionality, Playwright support advance techniques for handling more complex cases. These includes multi-factor auth , OAUTH flows, and handling CAPTCHA challenges and many more third party auth like clerk , magic link e.t.c.
+
+**1.Auth clerk with Playwright**
+
+Set the ENV variables as follows:
+
+```bash
+# Playwright
+PLAYWRIGHT_E2E_USER_ID="user_***"
+PLAYWRIGHT_E2E_USER_EMAIL="name@example.com"
+PLAYWRIGHT_E2E_USER_PASSWORD="***"
+```
+
+Next you want to edit your `global.auth.ts`
+
+```javascript
+
+import { chromium, expect, test as setup } from '@playwright/test';
+import { config as cfg } from '../config';
+import Clerk from '@clerk/clerk-js';
+import { test } from '@playwright/test';
+
+type ClerkType = typeof Clerk;
+
+const authFile = 'state.json';
+
+setup('Setup Auth', async ({ page, context }) => {
+
+  await page.goto("https://your.url")
+
+  // some quick check to see if the dom has loaded
+  const logo = await page.getByRole('img', { name: 'Logo' })
+  await expect(logo).toBeVisible();
+
+  // ENV variables generated using The Clerk Dashboard
+  const data = {
+    userId: process.env.PLAYWRIGHT_E2E_USER_ID || '',
+    loginPayload: {
+      strategy: 'password',
+      identifier: process.env.PLAYWRIGHT_E2E_USER_EMAIL || '',
+      password: process.env.PLAYWRIGHT_E2E_USER_PASSWORD || '',
+    }
+  }
+
+  //here is where the magic happens
+  const result = await page.evaluate(async data => {
+
+    // wait function as promise
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const wdw = window as Window & typeof globalThis & { Clerk: ClerkType };
+
+    /** clear the cookies */
+    document.cookie.split(";").forEach(function(c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
+
+    const clerkIsReady = (window: Window & typeof globalThis & { Clerk: ClerkType }) => {
+      return wdw.Clerk && wdw.Clerk.isReady();
+    }
+
+    while (!clerkIsReady(wdw)) {
+      await wait(100);
+    }
+
+    /** if the session is still valid just return true */
+    if (wdw.Clerk.session?.expireAt && wdw.Clerk.session.expireAt > new Date()) {
+      return true;
+    }
+
+    /** if its a different user currently logged in sign out */
+    if (wdw.Clerk.user?.id !== data.userId) {
+      await wdw.Clerk.signOut();
+    }
+
+    /**
+     * otherwise signin
+     */
+    const res = await wdw.Clerk.client?.signIn.create(data.loginPayload);
+
+    if (!res) {
+      return false
+    }
+
+    /** set the session as active */
+    await wdw.Clerk.setActive({
+      session: res.createdSessionId,
+    });
+
+    return true
+
+  }, data);
+
+  if (!result) {
+    throw new Error('Failed to sign in');
+  }
+
+  const pageContext = await page.context();
+
+  let cookies = await pageContext.cookies();
+
+  // clerk polls the session cookie, so we have to set a wait
+  while (!cookies.some(c => c.name === '__session')) {
+    cookies = await pageContext.cookies();
+  }
+
+  // store the cookies in the state.json
+  await pageContext.storageState({ path: authFile });
+
+})
+
+```
+
+The following code is the key to loading the session . Clerk makes a seperate request as a part of handshake after setting the session to Active. This could technically be an infinite loop, however playwright has timeout restrictions if there is an issue requesting the cookie
+
+```javascript
+while (!cookies.some((c) => c.name === "__session")) {
+  cookies = await pageContext.cookies();
+}
+```
+
+**2. Bypass CAPTCHA with Base Playwright and 2Captcha**
+
+Method 1 : Use the PLaywright and 2captcha plugin
+
+Let's start by installing the plugin
+
+```bash
+npm install playwright 2captcha
+```
+
+In code editor , import the both the libraries and create `async` function that launches the headless Chrome browser (with `headless: true`, as in production).
+
+```javascript
+// Call ReCaptcha Website
+const websiteUrl = "https://patrickhlauke.github.io/recaptcha/";
+await page.goto(websiteUrl);
+
+// Wait for the CAPTCHA element to load
+const captchaFrame = await page.waitForSelector(
+  "iframe[src*='recaptcha/api2']",
+);
+
+// Switch to the CAPTCHA iframe
+const captchaFrameContent = await captchaFrame.contentFrame();
+
+// Wait for the CAPTCHA checkbox to appear
+const captchaCheckbox =
+  await captchaFrameContent.waitForSelector("#recaptcha-anchor");
+
+// Click the CAPTCHA checkbox
+await captchaCheckbox.click();
+```
+
+to get the answer , invoke the `solver.recaptcha()` method to send a request to 2Captcha's API and fetch the response string containing the correct answer. Here, it's crucial to pass the data-sitekey parameter `(i.e., loremipsum)` from the CAPTCHA
+
+```javascript
+ // Wait for the CAPTCHA challenge to be solved by 2Captcha
+  const captchaResponse = await solver.recaptcha("loremipsum", websiteUrl);
+
+  // Fill in the CAPTCHA response and submit the form
+  const captchaInput = await captchaFrameContent.waitForSelector("#g-recaptcha-response");
+  await captchaInput.evaluate((input, captchaResponse) => {
+    input.value = captchaResponse;
+  }, captchaResponse);
+  await captchaFrameContent.waitForSelector("button[type='submit']").then((button) => button.click());
+
+  // Wait for the page to navigate to the next page
+  await page.waitForNavigation();
+
+  console.log("CAPTCHA solved successfully!");
+
+  await browser.close();
+
+})();
+```
+
+**Session management**
+
+session management is about maintaining user sessions securely and efficiently. with the help of playwright we can automate the session management by storing the session data in the cookies and local storage.
+
+for example
+
+```javascript
+// Simulate session expiration by manipulating cookies
+await page.context().addCookies([
+  {
+    name: "session",
+    value: "expired",
+    expires: Date.now(), // Set expiration to past time
+    url: "https://abc.com",
+  },
+]);
+
+// Navigate to a page requiring authentication
+await page.goto("https://abc.com/dashboard");
+
+// Verify redirection to login page
+// Insert verification logic here
+```
+
+for more details on session management with playwright , you can refer to the [Advanced Browser Manipulation with Playwright](https://momentic.ai/blog/session-management)
+
+**Best Practices for Handling Login with Playwright**
+
+- Use element selectors resilient to changes.
+
+- Implement wait strategies to handle asynchronous behavior.
+
+- Encrypt sensitive data like passwords during test execution.
+
+- Regularly update test scripts to accommodate application changes.
+
+- Incorporate logging and error handling for better debugging and reporting.
+
+**Conclusion**
+
+Effective login, logout, and session management are indispensable for modern web applications. With Playwright, automating these functionalities becomes not only feasible but also efficient. By following the strategies and examples outlined in this guide, you can ensure the reliability and security of your application's authentication and session handling mechanisms.
+
+By combining Playwright's automation capabilities with these practical strategies, you can streamline testing and enhance the overall quality of your web application.
