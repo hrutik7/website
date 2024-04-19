@@ -16,11 +16,11 @@ import { Tabs } from "nextra/components";
   authors={["hrutik"]}
 />
 
-In today's era of web applications, robust login, logout, and session management are essential for both security and user experience . Playwright, with it's powerful automation capabilities, provides a solid foundation for testing and implementing these important functionalities. In this blog we will explore some practical strategies and real world examples for handling login , logout and session management with playwright.
+In today's era of web applications, robust login, logout, and session management are essential for both security and user experience . Playwright, with its powerful automation capabilities, provides a solid foundation for testing and implementing these important functionalities. In this blog we will explore some practical strategies and real world examples for handling login , logout and session management with playwright.
 
 **Automating Login with Playwright**
 
-Login functionality is the gateway to the application for accesing the restricted area of the application. Automating login with Playwright involves simulating the user interactions like entering the credentials and submiting the login form . Let's see an examples
+Login functionality is the gateway to the application for accesing the restricted area of the application. Automating login with Playwright involves simulating the user interactions like entering the credentials and submitting the login form . Let's see some examples.
 
 ```javascript
 import { test as setup, expect } from "@playwright/test";
@@ -51,7 +51,7 @@ setup("authenticate", async ({ page }) => {
 
 now let's see **How to Handle auth in E2E testing with Playwright**
 
-To make it work, we should use [_globalsetup_](https://playwright.dev/docs/test-global-setup-teardown) . it's just a function an a property in the playwright configuration file. Here is sample configuration file
+To make it work, we should use [_globalsetup_](https://playwright.dev/docs/test-global-setup-teardown) . it's just a function and a property. in the playwright configuration file. Here is sample configuration file
 
 ```javascript
 import { devices } from "@playwright/test";
@@ -141,9 +141,9 @@ export class AuthPage {
 }
 ```
 
-Basic functionality is done here . Finished with logic implementation , connected to the test runners and it runs intially of the app flow
+Basic functionality is done here . Finished with logic implementation , connected to the test runners and it runs initially at the beginning of the app flow.
 
-Depending on the logic of the backend , the state of the auth might be reused several times . for example in this case, the token was valid for a couple of hours, so it's make no sense to run e2e auth logic again and again.
+Depending on the logic of the backend , the state of the auth might be reused several times . for example in this case, the token was valid for a couple of hours, so it makes no sense. to run e2e auth logic again and again.
 
 Let's make some improvements to the _globalSetup_ function
 
@@ -195,7 +195,7 @@ const config = {
 export default config;
 ```
 
-**Handeling Logout with Playwright**
+**Handling Logout with Playwright**
 
 For logging out let's see this [example](https://the-internet.herokuapp.com/login)
 
@@ -207,7 +207,7 @@ here we are following the steps for automating this test
 
 3. Assert that the login was successful
 
-4. Log out and assert that the logout was successful
+4. Log out and assert the success of the logout.
 
 ```javascript
 import { test, expect } from "@playwright/test";
@@ -243,7 +243,7 @@ test("Example to demonstrate text input and basic assertions", async ({
 
 Beyond the basic login and logout functionality, Playwright support advance techniques for handling more complex cases. These includes multi-factor auth , OAUTH flows, and handling CAPTCHA challenges and many more third party auth like clerk , magic link e.t.c.
 
-**1.Auth clerk with Playwright**
+**1. Auth clerk with Playwright**
 
 Set the ENV variables as follows:
 
@@ -393,7 +393,7 @@ const captchaCheckbox =
 await captchaCheckbox.click();
 ```
 
-to get the answer , invoke the `solver.recaptcha()` method to send a request to 2Captcha's API and fetch the response string containing the correct answer. Here, it's crucial to pass the data-sitekey parameter `(i.e., loremipsum)` from the CAPTCHA
+to retrieve the answer , invoke the `solver.recaptcha()` method to send a request to 2Captcha's API and fetch the response string containing the correct answer. Here, it's crucial to pass the data-sitekey parameter `(i.e., loremipsum)` from the CAPTCHA
 
 ```javascript
  // Wait for the CAPTCHA challenge to be solved by 2Captcha
