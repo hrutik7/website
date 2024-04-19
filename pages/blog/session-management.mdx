@@ -20,7 +20,7 @@ In today's era of web applications, robust login, logout, and session management
 
 **Automating Login with Playwright**
 
-Login functionality is the gateway to the application for accesing the restricted area of the application. Automating login with Playwright involves simulating the user interactions like entering the credentials and submitting the login form . Let's see some examples.
+Login functionality is the gateway to the application for accessing the restricted area of the application. Automating login with Playwright involves simulating the user interactions like entering the credentials and submitting the login form . Let's explore some examples.
 
 ```javascript
 import { test as setup, expect } from "@playwright/test";
@@ -51,7 +51,7 @@ setup("authenticate", async ({ page }) => {
 
 now let's see **How to Handle auth in E2E testing with Playwright**
 
-To make it work, we should use [_globalsetup_](https://playwright.dev/docs/test-global-setup-teardown) . it's just a function and a property. in the playwright configuration file. Here is sample configuration file
+To make it work,  we should use [_globalsetup_](https://playwright.dev/docs/test-global-setup-teardown) . it's just a function and a property. in the playwright configuration file. Here is sample configuration file
 
 ```javascript
 import { devices } from "@playwright/test";
@@ -141,9 +141,9 @@ export class AuthPage {
 }
 ```
 
-Basic functionality is done here . Finished with logic implementation , connected to the test runners and it runs initially at the beginning of the app flow.
+Basic functionality has been implemented here . Finished with logic implementation , connected to the test runners and it is executed initially at the beginning of the application flow.
 
-Depending on the logic of the backend , the state of the auth might be reused several times . for example in this case, the token was valid for a couple of hours, so it makes no sense. to run e2e auth logic again and again.
+Depending on the logic of the backend , the state of the auth might be reused several times . for example in this case, the token was valid for a couple of hours, so it makes no sense to run e2e auth logic again and again.
 
 Let's make some improvements to the _globalSetup_ function
 
@@ -364,13 +364,13 @@ while (!cookies.some((c) => c.name === "__session")) {
 
 Method 1 : Use the PLaywright and 2captcha plugin
 
-Let's start by installing the plugin
+We'll begin by installing the plugin
 
 ```bash
 npm install playwright 2captcha
 ```
 
-In code editor , import the both the libraries and create `async` function that launches the headless Chrome browser (with `headless: true`, as in production).
+In your code editor, import the both the libraries and create `async` function that launches the headless Chrome browser (with `headless: true`, as in production).
 
 ```javascript
 // Call ReCaptcha Website
@@ -446,7 +446,7 @@ npm init playwright@latest
 
 **Configuring Playwright**
 
-PLaywright configuration file is created in the root directory of the project. Here is the sample configuration file
+Playwright configuration file is created in the root directory of the project. Here is the sample configuration file
 
 ```javascript
 import dotenv from 'dotenv'
@@ -572,7 +572,7 @@ async function globalSetup(config: FullConfig) {
 }
 ```
 
-Supabse sends the email asyncrhronously , there's a tiny delay , and we can't gurantee the time between triggering the email and when we try to finish logging in
+Supabase sends the email asyncrhronously , there's a tiny delay , and we can't gurantee the time between triggering the email and when we try to finish logging in
 
 A workaround for this might be hardcoding a dealy of a few hundred ms . to avoid this situation we need to wrote a function that'll wait for new email before continuing .
 
@@ -622,7 +622,7 @@ async function globalSetup(config: FullConfig) {
 }
 ```
 
-let's test a simple test case
+let's run a simple test case
 
 ```javascript
 import { expect, test } from "@playwright/test";
@@ -635,7 +635,7 @@ test("can login", async ({ page }) => {
 });
 ```
 
-**Running the tests in CI**
+**Running the tests in Continuous Integration (CI)**
 
 ```bash
 playwright:
@@ -686,7 +686,7 @@ playwright:
 
 **Session management**
 
-session management is about maintaining user sessions securely and efficiently. with the help of playwright we can automate the session management by storing the session data in the cookies and local storage.
+Session management involves maintaining user sessions securely and efficiently. with the help of playwright we can automate the session management by storing the session data in the cookies and local storage.
 
 for example
 
@@ -708,7 +708,7 @@ await page.goto("https://abc.com/dashboard");
 // Insert verification logic here
 ```
 
-for more details on session management with playwright , you can refer to the [Advanced Browser Manipulation with Playwright](https://momentic.ai/blog/session-management)
+For more details on session management with playwright , you can refer to the [Advanced Browser Manipulation with Playwright](https://momentic.ai/blog/session-management)
 
 **Best Practices for Handling Login with Playwright**
 
