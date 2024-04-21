@@ -16,7 +16,7 @@ import { Tabs } from "nextra/components";
   authors={["hrutik"]}
 />
 
-In the fast-evolving realm of web development, proficiency in browser manipulation is essential for crafting high-quality web applications. Playwright, a powerful automation library, empowers developers to programmatically control web browsers. In this comprehensive guide, we will delve into the nuances of managing cookies, localstorage, and sessions using Playwright, enabling developers to unlock its full ability for browser automation.
+In the fast-evolving realm of web development, proficiency in browser manipulation is essential for crafting high-quality web applications. Playwright, a powerful automation library, empowers developers to programmatically control web browsers. In this comprehensive guide, we will delve into the nuances of managing cookies, localstorage, and sessions using Playwright, enabling developers to unlock their full ability for browser automation.
 
 ## Managing cookies programmatically
 
@@ -72,9 +72,9 @@ const cookies = await page.context().cookies();
 console.log(cookies); // console all the cookies
 ```
 
-Playwright manages cookies through the _browser context_. The browser context is a container for a set of pages that share the same cookies and storage. By default, Playwright creates a new browser context for different browser instance, allowing developers to manage cookies and storage independently for each context.
+Playwright manages cookies through the _browser context_. The browser context is a container for a set of pages that share the same cookies and storage. By default, Playwright creates a new browser context for different browser instances, allowing developers to manage cookies and storage independently for each context.
 
-**Retrive and filter cookies**
+**Retrieve  and filter cookies**
 
 After cookies are fetched, you can filter them based on your required needs.
 for example :
@@ -93,11 +93,11 @@ To get a specific cookie from a URL, you can use the `cookies()` method to fetch
 const googleCookies = await context.cookies(["https://wikipedia.org/"]);
 ```
 
-**An Example of getting cookie**
+**An Example of getting the cookie**
 
 Let's see the example of [Wikipedia](https://wikipedia.org/)
 
-At first it will navigate to the wikipedia website, get all cookies from the context, search for the `locale` cookie and finally it will return a specific cookie from the website.
+At first it will navigate to the Wikipedia website, get all cookies from the context, search for the `locale` cookie and finally it will return a specific cookie from the website.
 
 ```javascript
 const { chromium } = require("playwright");
@@ -249,7 +249,7 @@ const { chromium } = require("playwright");
 
 **Some best practices for cookie management**
 
-When working with cookies in playwright obeying to best practices can make sure efficient, secure, and reliable handling of user data. Here are some best practices for managing cookies in Playwright :
+When working with cookies in Playwright obeying best practices can ensure efficient, secure, and reliable handling of user data. Here are some best practices for managing cookies in Playwright :
 
 - updating cookies : Update cookies according to expiration dates for efficient management.(`expires` key).
 
@@ -315,7 +315,7 @@ One of the most challenging in web testing is simulating different user scenario
 
 **Integrating LocalStorage and SessionStorage in Playwright Tests**
 
-To effectively test the web application that utilize LocalStorage and SessionStorage, we need a way to manipulate and interact with these strong mechanisms. Playwright provides a necessary API to achieve this.
+To effectively test the web application that utilizes LocalStorage and SessionStorage, we need a way to manipulate and interact with these strong mechanisms.The Playwright provides a necessary API to achieve this.
 
 let's go through an example of how we can interact with LocalStorage and SessionStorage in Playwright tests using TypeScript :
 
@@ -371,7 +371,7 @@ describe("LocalStorage and SessionStorage Tests", () => {
 });
 ```
 
-In this above example, we first launch chromium browser instance and create a new browser context and page for each test. We then navigate to sample page for each test. and then we navigate to to sample webpage to demostrate the interaction with LoaclStorage and sessionStorage Within each test case, we use the page.evaluate() method provided by Playwright to execute JavaScript code within the context of the loaded page. This allows us to manipulate LocalStorage and SessionStorage by calling their respective setItem() and getItem() methods.
+In this above example, we first launch the Chromium browser instances and create a new browser context and page for each test. We then navigate to the sample page for each test. and then we navigate to to sample webpage to demonstrate the interaction with LoaclStorage and sessionStorage Within each test case, we use the page.evaluate() method provided by Playwright to execute JavaScript code within the context of the loaded page. This allows us to manipulate LocalStorage and SessionStorage by calling their respective setItem() and getItem() methods.
 
 **Re-use state and Re-use authentication using storageState**
 
@@ -470,7 +470,7 @@ test("test-2", async ({ page }) => {
 
 Now run the test cases using the command `npx playwright test`. it will run the test cases and re-use the state and authentication in the test cases.
 
-if once the `state.json` file is created, it will re-use the state and authentication in the test cases.
+if the `state.json` file is created, it will re-use the state and authentication in the test cases.
 
 **Use different authentication for certain tests**
 
