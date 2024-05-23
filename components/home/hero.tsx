@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { HeroText, SectionSubtext } from "../headings";
 import BestParents from "./images/best-parents.webp";
 import Conch from "./images/conch.webp";
-import Overview from "./images/overview.png";
+// import Overview from "./images/overview.png";
 // import Talitrix from "./images/talitrix.webp";
 import Lunchbreak from "./images/lunchbreak.webp";
 // import Ghostcontent from "./images/ghostcontent.svg";
 import Thinkful from "./images/thinkful.svg";
 import { Gradient } from "../gradient";
+import Sacra from "./images/sacra.png";
 
 export function Hero() {
   return (
@@ -128,8 +129,8 @@ export function Companies() {
       ),
     },
     {
-      url: "https://overview.ai/",
-      component: <Image src={Overview} alt="Overview" height={IMAGE_SIZE} />,
+      url: "https://sacra.com/",
+      component: <Image src={Sacra} alt="Sacra" height={IMAGE_SIZE} />,
     },
     // {
     //   url: "https://talitrix.com/",

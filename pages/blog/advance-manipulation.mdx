@@ -99,6 +99,7 @@ Let's see the example of [Wikipedia](https://wikipedia.org/)
 
 At first it will navigate to the Wikipedia website, get all cookies from the context, search for the `locale` cookie and finally it will return a specific cookie from the website.
 
+
 ```javascript
 const { chromium } = require("playwright");
 
@@ -470,7 +471,7 @@ test("test-2", async ({ page }) => {
 
 Now run the test cases using the command `npx playwright test`. it will run the test cases and re-use the state and authentication in the test cases.
 
-if the `state.json` file is created, it will re-use the state and authentication in the test cases.
+If the `state.json` file is created, it will re-use the state and authentication in the test cases.
 
 **Use different authentication for certain tests**
 
