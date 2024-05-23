@@ -1,0 +1,507 @@
+---
+title: Advanced Browser Manipulation with Playwright
+date: 2024/04/11
+description: A comprehensive guide about managing cookies, local storage, and sessions.
+tag: tutorial
+author: Hrutik
+---
+
+import { BlogHeader } from "@/components/blog/blog-header";
+import { Tabs } from "nextra/components";
+
+<BlogHeader
+  title="Advanced Browser Manipulation with Playwright"
+  description="A comprehensive guide about managing cookies, local storage, and sessions."
+  date="April 11, 2024"
+  authors={["hrutik"]}
+/>
+
+In the fast-evolving realm of web development, proficiency in browser manipulation is essential for crafting high-quality web applications. Playwright, a powerful automation library, empowers developers to programmatically control web browsers. In this comprehensive guide, we will delve into the nuances of managing cookies, localstorage, and sessions using Playwright, enabling developers to unlock its full ability for browser automation.
+
+## Managing cookies programmatically
+
+Cookies play a pivotal role in preserving session state and tracking user interactions on the web. With Playwright, developers can manipulate cookies programmatically, offering versatility and command over browser sessions. Playwright provides an API for managing cookies, enabling developers to set, retrieve, and delete cookies as required.
+
+**Setting a cookie**
+
+To set a cookie using Playwright, developers can leverage the _setCookie_ method, specifying the name, value, domain, and other attributes of the cookie. This method allows developers to simulate diverse user scenarios, such as authentication and session management.
+
+Let's break down the process step by step :
+
+**1. Accessing the page context** : Before setting a cookie, developers typically need to access the desired page controlled by Playwright.
+
+**2. Utilizing the setCookie method** : Once on the desired page, developers can use the setCookie method to define and set the attributes of the cookie. This method accepts parameters such as the cookie name, value, domain, and other attributes like path and expiration date.
+
+```javascript
+await page.setCookie({
+  name: "<name>",
+  value: "<value>",
+  domain: "<domain>",
+});
+```
+
+- 'name' : Specifies the name of the cookie
+- 'value' : Specifies the value of the cookie
+- 'domain' : Specifies the domain of the cookie
+
+Here are some ways to manage cookies programmatically using Playwright :
+
+- `cookies()` : Get all the cookies for the current page session
+- `setCookie()` : Set a cookie by defining its attributes
+- `deleteCookie()` : Delete a specific cookie
+- `clearCookies()` : Clear all cookies for the current page session
+- `storageState()` : Persist cookies accross sessions
+
+**Browser Cookie Storage Overview:**
+
+Easily inspect the cookies stored in the browser using Google Developer Tools. Access the cookies by opening the developer tools with `F12` and navigating to the Application tab. Here, view the stored cookies with attributes like name, value, domain, and expiration date.
+
+<Frame>
+  ![intro meme](/images/blog/advanceBrowser_manipulation/browser_cookies.png)
+</Frame>
+
+**Get the Cookie in Playwright**
+
+To fetch cookies in Playwright, utilize the `cookies.context()` method, which returns an array of cookie objects for the current context. For example, fetch cookies by navigating to a specific website and accessing all stored cookies.
+
+for example :
+
+```javascript
+await page.goto("https://wikipedia.org/");
+const cookies = await page.context().cookies();
+console.log(cookies); // console all the cookies
+```
+
+Playwright manages cookies through the _browser context_. The browser context is a container for a set of pages that share the same cookies and storage. By default, Playwright creates a new browser context for different browser instance, allowing developers to manage cookies and storage independently for each context.
+
+**Retrive and filter cookies**
+
+After cookies are fetched, you can filter them based on your required needs.
+for example :
+
+```javascript
+const cookies = await context.cookies();
+const sessionCookie = cookies.find((c) => c.name === "session_id");
+console.log(sessionCookie);
+```
+
+**Get a specific cookie from URL**
+
+To get a specific cookie from a URL, you can use the `cookies()` method to fetch all the cookies for the current session, and then filter the cookies based on the URL.
+
+```javascript
+const googleCookies = await context.cookies(["https://wikipedia.org/"]);
+```
+
+**An Example of getting cookie**
+
+Let's see the example of [Wikipedia](https://wikipedia.org/)
+
+At first it will navigate to the wikipedia website, get all cookies from the context, search for the `locale` cookie and finally it will return a specific cookie from the website.
+
+```javascript
+const { chromium } = require("playwright");
+
+(async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  await page.goto("https://www.wikipedia.org/");
+
+  // Get all cookies
+  const cookies = await context.cookies();
+  console.log(cookies);
+
+  const sessionCookie = cookies.find((c) => c.name === "locale");
+  console.log(sessionCookie);
+
+  const goodreadCookies = await context.cookies(["https://www.wikipedia.org/"]);
+  console.log(goodreadCookies);
+
+  await browser.close();
+})();
+```
+
+The output of the above code will be :
+
+```
+[
+{
+name: 'WMF-Last-Access',
+value: '10-Apr-2024',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1715532978.185065,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'WMF-Last-Access-Global',
+value: '10-Apr-2024',
+domain: '.wikipedia.org',
+path: '/',
+expires: 1715532978.185233,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'GeoIP',
+value: 'US:VA:Washington:38.71:-78.15:v4',
+domain: '.wikipedia.org',
+path: '/',
+expires: -1,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'NetworkProbeLimit',
+value: '0.001',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1712747831.243039,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+}
+]
+undefined
+[
+{
+name: 'WMF-Last-Access',
+value: '10-Apr-2024',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1715532978.185065,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'WMF-Last-Access-Global',
+value: '10-Apr-2024',
+domain: '.wikipedia.org',
+path: '/',
+expires: 1715532978.185233,
+httpOnly: true,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'GeoIP',
+value: 'US:VA:Washington:38.71:-78.15:v4',
+domain: '.wikipedia.org',
+path: '/',
+expires: -1,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+},
+{
+name: 'NetworkProbeLimit',
+value: '0.001',
+domain: 'www.wikipedia.org',
+path: '/',
+expires: 1712747831.243039,
+httpOnly: false,
+secure: true,
+sameSite: 'Lax'
+}
+]
+```
+
+**Working with session cookies**
+
+Session cookies in Playwright are temporary cookies that are deleted once the browser session concludes. These cookies are ideal for maintaining session state and user authentication. Developers can create a session cookie by excluding the expires or maxAge properties when using the context.addCookies() method.
+Here is an example of creating a session cookie :
+
+```javascript
+const { chromium } = require("playwright");
+
+(async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Add a session cookie
+  await context.addCookies([
+    {
+      name: "session_cookie",
+      value: "123456",
+      domain: "example.com",
+      path: "/",
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    },
+  ]);
+
+  // Verify the cookie is set
+  const cookies = await context.cookies();
+  console.log(cookies);
+
+  await browser.close();
+})();
+```
+
+**Some best practices for cookie management**
+
+When working with cookies in playwright obeying to best practices can make sure efficient, secure, and reliable handling of user data. Here are some best practices for managing cookies in Playwright :
+
+- updating cookies : Update cookies according to expiration dates for efficient management.(`expires` key).
+
+- Handle errors : Implement error handling to prevent unexpected behavior when setting or deleting cookies.
+
+- Test in Headless mode : Test in Headless mode to manage potential issues when interacting with cookies and prevent script failures.
+
+**Cookie handling in production**
+
+Demonstrate cookie handling in a real-world scenario by signing in to a website and transferring the auth cookie to another browser to access protected content without signing in again.
+
+```javascript
+const { chromium } = require("playwright");
+
+(async () => {
+  // Open a new browser
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Navigate to the login page and log in
+  await page.goto("https://the-internet.herokuapp.com/login");
+  await page.fill("#username", "tomsmith");
+  await page.fill("#password", "SuperSecretPassword!");
+  await page.click(".fa-sign-in");
+
+  // Wait for navigation to ensure login is complete
+  await page.waitForURL("**/secure**");
+
+  // Get the authentication cookie
+  const cookies = await context.cookies();
+  const authCookie = cookies.find((cookie) => cookie.name === "rack.session");
+
+  // Close the current browser
+  await browser.close();
+
+  // Open a new browser
+  const newBrowser = await chromium.launch();
+  const newContext = await newBrowser.newContext();
+  const newPage = await newContext.newPage();
+
+  // Add the authentication cookie
+  await newContext.addCookies([authCookie]);
+
+  // Navigate to the protected content
+  await newPage.goto("https://the-internet.herokuapp.com/secure"); // replace with your protected content URL
+  console.log(await newPage.innerText("h4"));
+
+  // Close the new browser
+  await newBrowser.close();
+})();
+```
+
+**LocalStorage and SessionStorage in Playwright Tests with TypeScript**
+
+One of the most challenging in web testing is simulating different user scenarios. Including interactions with browser storage mechanisms such as LocalStorage and SessionStorage. These storage play very important role in storing user data and application state locally within the browser
+
+**LocalStorage v/s SessionStorage**
+
+- LocalStorage : Data stored in LocalStorage persists even after the browser is closed and reopened. It has no expiration time unless explicitly removed by the script execution.
+
+- SessionStorage : Data stored in SessionStorage is tied to the lifespan of the browser session. once the browser is closed, the data will be deleted.
+
+**Integrating LocalStorage and SessionStorage in Playwright Tests**
+
+To effectively test the web application that utilize LocalStorage and SessionStorage, we need a way to manipulate and interact with these strong mechanisms. Playwright provides a necessary API to achieve this.
+
+let's go through an example of how we can interact with LocalStorage and SessionStorage in Playwright tests using TypeScript :
+
+```typescript
+import { chromium, Browser, BrowserContext, Page } from "playwright";
+
+describe("LocalStorage and SessionStorage Tests", () => {
+  let browser: Browser;
+  let context: BrowserContext;
+  let page: Page;
+
+  beforeAll(async () => {
+    browser = await chromium.launch();
+    context = await browser.newContext();
+    page = await context.newPage();
+  });
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  it("should interact with LocalStorage", async () => {
+    await page.goto("https://example.com");
+
+    // Set item in LocalStorage
+    await page.evaluate(() => {
+      localStorage.setItem("key", "value");
+    });
+
+    // Retrieve item from LocalStorage
+    const storedValue = await page.evaluate(() => {
+      return localStorage.getItem("key");
+    });
+
+    expect(storedValue).toBe("value");
+  });
+
+  it("should interact with SessionStorage", async () => {
+    await page.goto("https://example.com");
+
+    // Set item in SessionStorage
+    await page.evaluate(() => {
+      sessionStorage.setItem("key", "value");
+    });
+
+    // Retrieve item from SessionStorage
+    const storedValue = await page.evaluate(() => {
+      return sessionStorage.getItem("key");
+    });
+
+    expect(storedValue).toBe("value");
+  });
+});
+```
+
+In this above example, we first launch chromium browser instance and create a new browser context and page for each test. We then navigate to sample page for each test. and then we navigate to to sample webpage to demostrate the interaction with LoaclStorage and sessionStorage Within each test case, we use the page.evaluate() method provided by Playwright to execute JavaScript code within the context of the loaded page. This allows us to manipulate LocalStorage and SessionStorage by calling their respective setItem() and getItem() methods.
+
+**Re-use state and Re-use authentication using storageState**
+
+Let's setup `global-setup.ts` file to re-use the state and authentication in the test cases.
+
+```typescript
+import { chromium, Browser, BrowserContext, Page } from "playwright";
+
+async function globalSetup() {
+  const browser: Browser = await chromium.launch({ headless: false });
+
+  const context: BrowserContext = await browser.newContext();
+  const page: Page = await context.newPage();
+
+  await page.goto("https://demoblaze.com/");
+  await page.locator("#login2").click();
+  await page.locator("#loginusername").fill("test");
+  await page.locator("#loginpassword").fill("test");
+  await page.locator('[onclick="logIn()"]').click();
+  await expect(page.locator("#logout2")).toBeVisible({ timeout: 5000 });
+
+  //Save the state
+
+  await page.context().storageState({ path: "state.json" });
+
+  await browser.close();
+}
+
+export default globalSetup;
+```
+
+Make sure in playwright.config.ts file you have added the globalSetup file path. it will tell the playwright configuration to look for the globalSetup file. and setup the storageState too. in `use` or `projects` field if
+
+```typescript
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  globalSetup: "./global-setup.ts",
+  // Look for test files in the "tests" directory, relative to this configuration file.
+  testDir: "tests",
+
+  // Run all tests in parallel.
+  fullyParallel: true,
+
+  // Fail the build on CI if you accidentally left test.only in the source code.
+  forbidOnly: !!process.env.CI,
+
+  // Retry on CI only.
+  retries: process.env.CI ? 2 : 0,
+
+  // Opt out of parallel tests on CI.
+  workers: process.env.CI ? 1 : undefined,
+
+  // Reporter to use
+  reporter: "html",
+
+  use: {
+    // Base URL to use in actions like `await page.goto('/')`.
+    baseURL: "http://127.0.0.1:3000",
+
+    // Collect trace when retrying the failed test.
+    trace: "on-first-retry",
+    storageState: "./state.json",
+  },
+  // Configure projects for major browsers.
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+  // Run your local dev server before starting the tests.
+  webServer: {
+    command: "npm run start",
+    url: "http://127.0.0.1:3000",
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
+in tests folder create 2 test files `test-1.spec.ts` and `test-2.spec.ts`.
+
+```typescript
+import { test, expect } from "@playwright/test";
+
+test("test-1", async ({ page }) => {
+  await page.goto("https://demoblaze.com/");
+  await expect(page.locator("#logout2")).toBeVisible({ timeout: 5000 });
+});
+
+test("test-2", async ({ page }) => {
+  await page.goto("https://demoblaze.com/");
+  await expect(page.locator("#logout2")).toBeVisible({ timeout: 5000 });
+});
+```
+
+Now run the test cases using the command `npx playwright test`. it will run the test cases and re-use the state and authentication in the test cases.
+
+if once the `state.json` file is created, it will re-use the state and authentication in the test cases.
+
+**Use different authentication for certain tests**
+
+The most obvious way to handle this is by clearing the cookies
+
+in file `test-2.spec.ts` add the following code :
+
+```typescript
+import { test, expect } from "@playwright/test";
+
+test("test-2", async ({ page, context }) => {
+  await page.context().clearCookies();
+  await page.goto("https://demoblaze.com/");
+  await expect(page.locator("#logout2")).toBeVisible({ timeout: 5000 });
+});
+```
+
+2nd method is to create a `Noauth.json` file and use it in the test cases.
+
+```typescript
+import { test, expect } from "@playwright/test";
+test.use({ storageState: "Noauth.json" });
+test("test-2", async ({ page }) => {
+  await page.goto("https://demoblaze.com/");
+  await expect(page.locator("#logout2")).toBeVisible({ timeout: 5000 });
+});
+```
+
+here is the repo link for this
+[Playwright-StorageState](https://github.com/hrutik7/Playwright-StorageState)
+
+**Conclusion**
+
+By mastering the capabilities of Playwright for browser automation and understanding cookie and session management, developers can efficiently control browser behavior and simulate user interactions. Leveraging the best practices and examples outlined in this guide, developers can unleash the full potential of Playwright for browser automation in testing, scraping, and various web development tasks.
